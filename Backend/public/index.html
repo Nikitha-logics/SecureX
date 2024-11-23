@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Chat</title>
+</head>
+<body>
+    <div>
+        <h1>Group Chat</h1>
+        <div>
+            <input id="room-id" type="text" placeholder="Enter Room ID">
+            <button id="create-room">Create Room</button>
+            <button id="join-room">Join Room</button>
+        </div>
+        <div id="chat-container" style="display:none;">
+            <h2>Chat</h2>
+            <div id="messages"></div>
+            <input id="message-input" type="text" placeholder="Type a message">
+            <button id="send-message">Send</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        const roomIDInput = document.getElementById('room-id');
+        const createRoomButton = document.getElementById('create-room');
+        const joinRoomButton = document.getElementById('join-room');
+        const chatContainer = document.getElementById('chat-container');
+        const messagesDiv = document.getElementById('messages');
+        const messageInput = document.getElementById('message-input');
+        const sendMessageButton = document.getElementById('send-message');
+
+        let currentRoom = null;
+
+        // Handle room creation
+        createRoomButton.addEventListener('click', () => {
+            const roomID = roomIDInput.value.trim();
+            if (roomID) {
+                socket.emit('create-room', roomID);
+                currentRoom = roomID;
+            }
+        });
+
+        // Handle room joining
+        joinRoomButton.addEventListener('click', () => {
+            const roomID = roomIDInput.value.trim();
+            if (roomID) {
+                socket.emit('join-room', roomID);
+                currentRoom = roomID;
+            }
+        });
+
+        // Show chat container when room is created or joined
+        socket.on('room-created', (roomID) => {
+            alert(`Room created: ${roomID}`);
+            chatContainer.style.display = 'block';
+        });
+
+        socket.on('room-joined', (roomID) => {
+            alert(`Joined room: ${roomID}`);
+            chatContainer.style.display = 'block';
+        });
+
+        socket.on('user-joined', (message) => {
+            const msgDiv = document.createElement('div');
+            msgDiv.textContent = message;
+            messagesDiv.appendChild(msgDiv);
+        });
+
+        socket.on('receive-message', ({ sender, message }) => {
+            const msgDiv = document.createElement('div');
+            msgDiv.textContent = `${sender}: ${message}`;
+            messagesDiv.appendChild(msgDiv);
+        });
+
+        // Handle sending messages
+        sendMessageButton.addEventListener('click', () => {
+            const message = messageInput.value.trim();
+            if (message && currentRoom) {
+                socket.emit('send-message', { roomID: currentRoom, message });
+                const msgDiv = document.createElement('div');
+                msgDiv.textContent = `You: ${message}`;
+                messagesDiv.appendChild(msgDiv);
+                messageInput.value = '';
+            }
+        });
+
+        socket.on('error', (errorMsg) => {
+            alert(errorMsg);
+        });
+    </script>
+</body>
+</html>
