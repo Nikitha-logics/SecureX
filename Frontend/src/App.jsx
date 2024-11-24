@@ -16,12 +16,10 @@ const App = () => {
 
     useEffect(() => {
         socket.on('room-created', ({ roomID, groupKey }) => {
-            console.log(`Room created: ${roomID}`);
             setGroupKey(groupKey);
         });
 
         socket.on('room-joined', ({ roomID, groupKey }) => {
-            console.log(`Joined room: ${roomID}`);
             setIsInRoom(true);
             setGroupKey(groupKey); // Save the group key
         });
@@ -34,13 +32,27 @@ const App = () => {
             return () => clearTimeout(timer);
         });
 
-        socket.on('receive-message', ({ sender, encryptedMessage }) => {
-            // Decrypt the message
-            const bytes = CryptoJS.AES.decrypt(encryptedMessage, groupKey);
-            const decryptedMessage = bytes.toString(CryptoJS.enc.Utf8);
-
-            setMessages((prev) => [...prev, { sender, message: decryptedMessage }]);
+        socket.on('receive-message', async ({ sender, encryptedMessage }) => {
+            try {
+                // Decrypt the message
+                const bytes = CryptoJS.AES.decrypt(encryptedMessage, groupKey);
+                const decryptedMessage = bytes.toString(CryptoJS.enc.Utf8);
+        
+                // Skip adding the message if it was sent by the current user
+                if (sender === userName) return;
+        
+                // Process URLs in the decrypted message
+                const processedMessage = await processMessageWithURLs(decryptedMessage);
+        
+                setMessages((prev) => [
+                    ...prev,
+                    { sender, message: processedMessage.formattedMessage, urlChecks: processedMessage.urlChecks },
+                ]);
+            } catch (error) {
+                console.error('Error decrypting or processing message:', error);
+            }
         });
+        
 
         return () => {
             socket.off('room-created');
@@ -74,16 +86,20 @@ const App = () => {
         }
     };
 
-    const sendMessage = () => {
+    const sendMessage = async () => {
         if (message.trim() === '') return;
 
+        // Process message to detect and analyze URLs
+        const processedMessage = await processMessageWithURLs(message);
+
         // Encrypt the message
-        const encryptedMessage = CryptoJS.AES.encrypt(message, groupKey).toString();
+        const encryptedMessage = CryptoJS.AES.encrypt(processedMessage.formattedMessage, groupKey).toString();
 
         // Emit the encrypted message
         socket.emit('send-message', { roomID, encryptedMessage });
 
         setMessage('');
+        setMessages((prev) => [...prev, { sender: 'You', message: processedMessage.formattedMessage }]);
     };
 
     return (
@@ -117,8 +133,9 @@ const App = () => {
                     {joinMessage && <div className="join-notification">{joinMessage}</div>}
                     <div className="messages-list">
                         {messages.map((msg, index) => (
-                            <div key={index} className={`message ${msg.sender === userName ? 'sent' : 'received'}`}>
-                                <strong>{msg.sender === userName ? 'You' : msg.sender}:</strong> {msg.message}
+                            <div key={index} className={`message ${msg.sender === 'You' ? 'sent' : 'received'}`}>
+                                {msg.sender !== 'You' && <strong>{msg.sender}:</strong>}
+                                <span dangerouslySetInnerHTML={{ __html: msg.message }} />
                             </div>
                         ))}
                         <div ref={messagesEndRef} />
@@ -140,3 +157,40 @@ const App = () => {
 };
 
 export default App;
+
+// Helper Functions for URL Detection and Processing
+async function processMessageWithURLs(messageText) {
+    const urlRegex = /(https?:\/\/[^\s]+)|(www\.[^\s]+)|([^\s]+\.[a-z]{2,})(\/[^\s]*)?/gi;
+    const urls = messageText.match(urlRegex) || [];
+    const urlChecks = [];
+
+    for (const url of urls) {
+        try {
+            const response = await fetch('http://10.1.93.25:5000/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url }),
+            });
+            const result = await response.json();
+            const isSafe = result.safety_status === 'SAFE';
+            urlChecks.push({ url, isSafe, prediction: result.prediction });
+        } catch (error) {
+            console.error(`Error checking URL ${url}:`, error);
+            urlChecks.push({ url, isSafe: false });
+        }
+    }
+
+    let formattedMessage = messageText;
+    urlChecks.forEach((check) => {
+        const safetyEmoji = check.isSafe ? '🔒' : '⚠️';
+        const safetyText = check.isSafe ? '<b>SAFE</b>' : '<b>UNSAFE</b>';
+        const safetyClass = check.isSafe ? 'safe' : 'unsafe';
+
+        formattedMessage = formattedMessage.replace(
+            check.url,
+            `<span class="${safetyClass}">${safetyEmoji} ${safetyText} <a href="${check.url}" target="_blank">${check.url}</a></span>`
+        );
+    });
+
+    return { formattedMessage, urlChecks };
+}
