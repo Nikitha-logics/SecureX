@@ -106,7 +106,7 @@ const App = () => {
         <div className="container">
             {!isInRoom && (
                 <>
-                    <h1 className="title">Chat App</h1>
+                    <h1 className="title">Crypt Talk</h1>
                     <input
                         type="text"
                         placeholder="Room ID"
