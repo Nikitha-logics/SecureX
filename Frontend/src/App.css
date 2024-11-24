@@ -1,57 +1,57 @@
-/* App.css */
-
+/* General body and container styles */
 body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background-color: #f0f4f8;
-    color: #333;
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f0f4f8;
+  color: #333;
 }
 
 .container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    width:100vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100vw;
 }
 
 .title {
-    font-size: 2.5rem;
-    margin-bottom: 20px;
-    color: #007bff; /* Bootstrap primary color */
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  color: #007bff; /* Bootstrap primary color */
 }
 
 .input {
-    width: 300px;
-    padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 1rem;
+  width: 300px;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
 }
 
 .button-container {
-    display: flex;
-    justify-content: space-between;
-    width: 300px;
+  display: flex;
+  justify-content: space-between;
+  width: 300px;
 }
 
 .button {
-    padding: 10px 15px;
-    margin-top: 10px;
-    border: none;
-    border-radius: 5px;
-    background-color: #007bff; /* Bootstrap primary color */
-    color: white;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+  padding: 10px 15px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 5px;
+  background-color: #007bff; /* Bootstrap primary color */
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 .button:hover {
-    background-color: #0056b3; /* Darker shade on hover */
+  background-color: #0056b3; /* Darker shade on hover */
 }
 
+/* Messages container styles */
 .messages-container {
   width: 100vw; /* Full width of the viewport */
   height: 100vh; /* Full height of the viewport */
@@ -65,36 +65,80 @@ body {
 }
 
 .join-notification {
-    padding: 10px;
-    background-color: #e7f3fe; /* Light blue background */
-    color: #31708f; /* Blue text */
-    border-left: 5px solid #31708f; /* Left border */
+  padding: 10px;
+  background-color: #e7f3fe; /* Light blue background */
+  color: #31708f; /* Blue text */
+  border-left: 5px solid #31708f; /* Left border */
 }
 
 .messages-list {
-    max-height: 400px; /* Limit height for scrolling */
-    overflow-y: auto; /* Enable scrolling */
-    padding: 10px;
+  flex: 1; /* Take up available space */
+  width: 100%; /* Full width for the messages list */
+  overflow-y: auto; /* Enable vertical scrolling */
+  padding: 10px;
+  box-sizing: border-box; /* Include padding in width calculation */
 }
 
+/* Chat bubble styles */
+.messages-list {
+  flex: 1; /* Take up available space */
+  width: 100%; /* Full width for the messages list */
+  overflow-y: auto; /* Enable vertical scrolling */
+  padding: 10px;
+  box-sizing: border-box; /* Include padding in width calculation */
+  display: flex; /* Flex container to stack messages */
+  flex-direction: column; /* Stack messages vertically */
+  justify-content: flex-start; /* Start stacking from the top */
+}
+
+/* Chat bubble styles */
 .message {
-    padding: 8px;
-    margin-bottom: 10px;
-    border-radius: 5px;
+  display: inline-block; /* Shrink the bubble to fit the content */
+  max-width: 70%; /* Limit the bubble width to 70% of the screen */
+  word-wrap: break-word; /* Ensure long text wraps to the next line */
+  padding: 10px 15px; /* Add some padding inside the bubble */
+  margin-bottom: 10px; /* Space between messages */
+  border-radius: 15px; /* Rounded corners for the bubble */
+  line-height: 1.4; /* Line height for better readability */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Optional: Add subtle shadow */
+  position: relative; /* To ensure proper alignment within the list */
 }
 
+/* Sent (right-aligned) messages */
 .sent {
-    background-color: #d1e7dd; /* Light green for sent messages */
-    text-align: right; /* Align sent messages to the right */
+  align-self: flex-end; /* Align sent messages to the right */
+  background-color: #d1e7dd; /* Light green for sent messages */
+  text-align: left; /* Text aligns inside the bubble */
 }
 
+/* Received (left-aligned) messages */
 .received {
-    background-color: #f8d7da; /* Light red for received messages */
+  align-self: flex-start; /* Align received messages to the left */
+  background-color: #f8d7da; /* Light red for received messages */
+  text-align: left; /* Text aligns inside the bubble */
 }
 
+/* Scroll to the bottom for new messages */
+.messages-list::-webkit-scrollbar {
+  width: 8px; /* Customize scrollbar width */
+}
+
+.messages-list::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2); /* Scrollbar thumb color */
+  border-radius: 4px; /* Rounded scrollbar */
+}
+
+/* Smooth scrolling effect for better user experience */
+.messages-list {
+  scroll-behavior: smooth; /* Smooth scrolling for new messages */
+}
+
+
+
+/* Input area styles */
 .message-input-container {
   display: flex;
-  justify-content: space-between; 
+  justify-content: space-between;
   position: fixed; /* Keep it fixed at the bottom */
   bottom: 20px; /* Distance from the bottom of the viewport */
   left: 10px; /* Margin from the left side */
@@ -106,18 +150,36 @@ body {
 }
 
 .message-input-container input {
-    flex-grow: 1; 
+  flex-grow: 1; /* Take up available width */
+  height: 50px; /* Larger input height */
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  padding: 10px;
+  font-size: 1rem;
 }
 
 .message-input-container button {
-   margin-left: 10px; 
+  width: 100px; /* Fixed width for the button */
+  height: 50px; /* Match input height */
+  margin-left: 10px; /* Space between input and button */
+  background-color: #007bff; /* Bootstrap primary color */
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.message-input-container button:hover {
+  background-color: #0056b3; /* Darker shade on hover */
 }
 
 /* URL Safety Indicators */
 .safe {
-   color: green; 
+  color: green; /* Green color for safe URLs */
 }
 
 .unsafe {
-   color: red; 
+  color: red; /* Red color for unsafe URLs */
 }
